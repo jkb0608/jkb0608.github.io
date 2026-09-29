@@ -1,19 +1,41 @@
-name: Deploy to Windows Server
+name: Deploy site to tablet
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            git -C C:\wwwroot\jankinbai.top pull origin main
-            git -C C:\wwwroot\jankinbai.top log -1 --oneline
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Package site
+        run: |
+          set -euo pipefail
+          mkdir -p stage/site
+          rsync -a --exclude='.git' --exclude='stage' ./ stage/site/
+          cd stage
+          zip -r -q site.zip site
+          ls -l site.zip
+
+      - name: Sign and ship to tablet
+        env:
+          DEPLOY_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          cd stage
+          SIG=$(python3 -c "import os,hmac,hashlib;print(hmac.new(os.environ['DEPLOY_SECRET'].encode(),open('site.zip','rb').read(),hashlib.sha256).hexdigest())")
+          echo "signature length: ${#SIG}"
+          curl -sS --fail-with-body -m 60 \
+            -X POST \
+            --data-binary @site.zip \
+            -H "Content-Type: application/zip" \
+            -H "X-Deploy-Signature: sha256=$SIG" \
+            -H "X-Deploy-Sha: $DEPLOY_SHA" \
+            https://deploy.jankinbai.top/
+          echo
+          echo "deploy delivered"
