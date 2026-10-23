@@ -39,8 +39,21 @@
   .ending .thanks.visible { opacity: 1; transform: translateY(0); }
   .ending .thanks-2 { font-size: 1.5em; color: #a0b0d0; letter-spacing: 0.45em; padding-left: 0.45em; opacity: 0; transform: translateY(20px); transition: opacity 2s ease 0.8s, transform 2s ease 0.8s; }
   .ending .thanks-2.visible { opacity: 0.75; transform: translateY(0); }
-  .ending .signature { margin-top: 60px; font-size: 0.82em; color: #506088; letter-spacing: 0.2em; opacity: 0; transition: opacity 2s ease 1.5s; }
+  .ending .signature { margin-top: 60px; font-size: 0.82em; color: #506088; letter-spacing: 0.15em; opacity: 0; transition: opacity 2s ease 1.5s; }
   .ending .signature.visible { opacity: 0.8; }
+  .ending .signature .signature-name {
+    font-family: "Brush Script MT", "Lucida Handwriting", "Segoe Script", "Comic Sans MS", cursive;
+    font-size: 1.6em;
+    font-style: italic;
+    background: linear-gradient(135deg, #ffd700 0%, #fff8dc 40%, #ffd700 70%, #daa520 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,0.4)) drop-shadow(0 0 16px rgba(255,180,100,0.25));
+    margin-left: 0.3em;
+    letter-spacing: 0.05em;
+  }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes gentleFloat { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
@@ -170,7 +183,7 @@
     </p>
     <div class="thanks">感 谢 相 遇</div>
     <div class="thanks-2">感 谢 相 遇</div>
-    <div class="signature">时维霜降 · 丙午年戊戌月庚午日寅时 · JankinBai</div>
+    <div class="signature">时维霜降 · 丙午年戊戌月庚午日寅时 · <span class="signature-name">JankinBai</span></div>
   </section>
 
 </div>
