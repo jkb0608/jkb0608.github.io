@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>致你 — 一段星空下的独白</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Times New Roman", "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+    background: linear-gradient(180deg,
+      #05051a 0%,
+      #0a0a2e 20%,
+      #12123a 45%,
+      #1a1a4a 70%,
+      #0d0d2b 100%);
+    color: #e0d8c8;
+    line-height: 2.1;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  #starfield {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    max-width: 660px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+
+  .cover .deco-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #8090c0, transparent);
+    margin-bottom: 32px;
+    animation: fadeIn 2s ease-out 0.3s both;
+  }
+
+  .cover h1 {
+    font-size: 2.6em;
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    margin-bottom: 0.4em;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(180, 200, 255, 0.4), 0 0 80px rgba(120, 150, 255, 0.2);
+    animation: fadeInUp 2s ease-out;
+    padding-left: 0.5em;
+  }
+
+  .cover .subtitle {
+    font-size: 1em;
+    color: #90a0c8;
+    letter-spacing: 0.35em;
+    animation: fadeInUp 2s ease-out 0.6s both;
+    padding-left: 0.35em;
+  }
+
+  .cover .epigraph {
+    margin-top: 48px;
+    font-size: 0.9em;
+    color: #7080a0;
+    font-style: italic;
+    max-width: 400px;
+    line-height: 1.9;
+    animation: fadeInUp 2s ease-out 1s both;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #6070a0;
+    font-size: 0.78em;
+    letter-spacing: 0.2em;
+    animation: fadeIn 1.5s ease-out 1.5s both, gentleFloat 3s ease-in-out 1.5s infinite;
+  }
+
+  .chapter {
+    padding: 72px 0;
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .chapter.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .chapter-label {
+    font-size: 0.72em;
+    color: #6078a8;
+    letter-spacing: 0.4em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .chapter h2 {
+    font-size: 1.45em;
+    font-weight: 400;
+    color: #c8d8f0;
+    margin-bottom: 1.6em;
+    letter-spacing: 0.12em;
+    position: relative;
+    padding-left: 18px;
+  }
+
+  .chapter h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.35em;
+    width: 3px;
+    height: 0.9em;
+    background: linear-gradient(180deg, #7090d0, #4060a0);
+    border-radius: 2px;
+  }
+
+  .chapter p {
+    margin-bottom: 1.4em;
+    text-align: justify;
+    font-size: 1.02em;
+    color: #c8c0b0;
+    text-indent: 2em;
+  }
+
+  .chapter p.emphasis {
+    color: #e0d8c8;
+    font-style: italic;
+  }
+
+  .divider {
+    text-align: center;
+    padding: 20px 0;
+    color: #405078;
+    font-size: 0.8em;
+    letter-spacing: 0.5em;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+
+  .divider.visible { opacity: 0.6; }
+
+  .ending {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 100px 0 80px;
+    position: relative;
+  }
+
+  .ending .final-words {
+    font-size: 1.05em;
+    color: #b8b0a0;
+    max-width: 520px;
+    line-height: 2.2;
+    margin-bottom: 60px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1.5s ease, transform 1.5s ease;
+  }
+
+  .ending .final-words.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .ending .thanks {
+    font-size: 2.4em;
+    color: #fff;
+    letter-spacing: 0.5em;
+    margin-bottom: 0.6em;
+    padding-left: 0.5em;
+    text-shadow: 0 0 30px rgba(255, 220, 150, 0.5), 0 0 60px rgba(255, 180, 100, 0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 2s ease 0.3s, transform 2s ease 0.3s;
+  }
+
+  .ending .thanks.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .ending .thanks-2 {
+    font-size: 1.5em;
+    color: #a0b0d0;
+    letter-spacing: 0.45em;
+    padding-left: 0.45em;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 2s ease 0.8s, transform 2s ease 0.8s;
+  }
+
+  .ending .thanks-2.visible {
+    opacity: 0.75;
+    transform: translateY(0);
+  }
+
+  .ending .signature {
+    margin-top: 60px;
+    font-size: 0.82em;
+    color: #506088;
+    letter-spacing: 0.2em;
+    opacity: 0;
+    transition: opacity 2s ease 1.5s;
+  }
+
+  .ending .signature.visible { opacity: 0.8; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes gentleFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  @media (max-width: 600px) {
+    .cover h1 { font-size: 2em; letter-spacing: 0.35em; }
+    .cover .subtitle { font-size: 0.9em; letter-spacing: 0.25em; }
+    .chapter { padding: 50px 0; }
+    .chapter h2 { font-size: 1.25em; }
+    .chapter p { font-size: 0.96em; text-indent: 1.8em; }
+    .ending .thanks { font-size: 1.8em; letter-spacing: 0.35em; }
+    .ending .thanks-2 { font-size: 1.2em; }
+    .content { padding: 0 20px; }
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a20; }
+  ::-webkit-scrollbar-thumb { background: #304070; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="content">
+
+  <section class="cover">
+    <div class="deco-line"></div>
+    <h1>致 你</h1>
+    <p class="subtitle">一段星空下的独白</p>
+    <p class="epigraph">
+      "这个故事似乎已经走完了一个阶段，<br>
+      我不知道该怎么定义它，<br>
+      但我觉得，我应该把和她的故事，<br>
+      郑重地讲一遍。"
+    </p>
+    <div class="scroll-hint">向下滚动</div>
+  </section>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter One</div>
+    <h2>电梯里的初遇</h2>
+    <p>第一次遇到她，是在电梯里。她当时在看手机，我转头注意到了她，之后可能又偷看了几眼——因为她太像我的一个高中同学了，特别像，特别像。</p>
+    <p>后来我剖析过：为什么我能在人群里一眼看到她？也许是因为她的所有特征都长在我的审美点上：短发、眼镜，圆嘟嘟的、特别可爱的那种；一张端庄平静的脸庞，一双特别有灵气、像会说话的眼睛；当然还有她可爱的身高和身材。那一切，就是我印象里一个完美恋人该有的样子。心理学里或许会把这叫作 Anima 投射——这是我后来复盘时才想到的。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Two</div>
+    <h2>那些注视的日子</h2>
+    <p>我记得那段时间，每天都能遇到她。饭点，转角，她和她的同事，我们会像有默契一样，彼此注视一下。为什么说是"注视"？因为它和看一眼不一样：看一眼是短暂的，而注视里，有一种有话要说的感觉。几乎每周、每天都是这样。我注意到她，她也会注意到我。</p>
+    <p>很凑巧，我的同事和她的同事是认识的，他们会打招呼。而她看到我同事之后，目光会接着找到我的眼神。那个眼神，特别令人期待，特别美好，真的是很漂亮的一个眼神，或者说，一次注视。</p>
+    <p>我记得那段时间，她几乎每天都会换一件衣服：可爱的碎花 T 恤、可爱的背带裤，还有各种特别可爱的小裙子。她身材很好，几乎什么衣服都能驾驭，像一朵可爱的小花。</p>
+    <p class="emphasis">这么美好的女孩，光是注视，就已经能带来莫大的开心了。我说不出任何话，只是怕打破这份注视。那大概就算是暧昧期吧。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Three</div>
+    <h2>偷感与巧合</h2>
+    <p>记得有一次进电梯，人群比较混乱，我们忍不住趁乱注视了对方一眼。啊，那真是特别美好，又带着一点"偷感"的、奇妙的暧昧氛围。</p>
+    <p>后来也不知道是怎么回事，我经常去 4 楼的卫生间——3 楼的卫生间经常有人。有一次恰巧又遇到了她，她的工位也就这样很自然地被我知道了。有时候我甚至会期待 3 楼的卫生间被人占着，真是搞笑，那样我就可以去 4 楼，看到她。</p>
+    <p>还有一次在电梯里，我的同事、她的同事，还有我们，一起进电梯。她很乖的样子，很甜的样子，短发特别漂亮，很美好，仿佛只有眼神会说话。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Four</div>
+    <h2>食堂与广场</h2>
+    <p>还有一次在食堂。那天下雨，我这边的面食窗口因为要现煮，要等很久，我就恰好等到了她。她在那边吃饭，我也自然地和同事一起过去吃。期间我们的眼神不小心又撞见了：她看着我，我当然也注视着她，然后她的眼神忽然放空，飘到了空中。我意识到了，双方眼里都带着一种喜悦，或者某种特别有意思的东西，我不知道是什么堵住了双方的表达。她是女孩子，可能比较害羞；而我，是不忍心破坏掉这种感觉。因为我不确定那条界限在哪里——一朵花，你若不合时宜地、鲁莽地越过界限，会惹出很多问题。我是用一种克制的状态在表达。</p>
+    <p>还记得有一次，我压力很大，晚上十点多去创新那边买润喉糖。创新外面的广场上只有我们两个人，我远远地就看到了她，不知道她有没有看到我。那次印象也很深刻。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Five</div>
+    <h2>最美好的一段路</h2>
+    <p>我觉得我们的感情到最高潮，是隔了一段时间之后的再次相遇。那一次我似乎在忙，在微信群里发了很长一段语音和同事交流，交流完恰好又遇到了她。我同事总是很快、很忙、很急地赶去吃饭，她的节奏却比较慢，慢而安静，特别好。那一次，我同事在前面先走了，我在后面慢慢放慢脚步，于是有了我和她之间最近的一次距离——我们俩可以并排走着。</p>
+    <p class="emphasis">阳光明媚，互相没有说话，只是感觉到彼此都很愉悦。我不知道她是否愉悦，但我是满心欢喜的。那是最美好的一段路，大概就是感情到达高潮的那种感觉，虽然很短暂。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Six</div>
+    <h2>中秋的对视</h2>
+    <p>第二天就是中秋节。在创新大厅，我在等我同事做活动，又看到了她。那一次她扎了小辫子，太有意思了，太可爱了，太可爱了！那时候我们俩的眼神都忍不住，贪婪地对视了两次。第二次特别长，长到已经超过了安全时间，我整个人都呆住了，但我还是不知道怎么开口，仿佛命运掐住了我的喉咙、定住了我的身体。她转身之后，神情似乎有一些平淡，又像是一种放开，也许还带着失望吧。我不清楚，可能这都是我自作多情。</p>
+    <p>哦对了，还记得有一次路过时，她可能戴了一个小发夹，特别可爱的小花图案。这或许是我的想象吧，我印象里已经不确定了，大概就是这样。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Seven</div>
+    <h2>她低下头了</h2>
+    <p>中秋之后，就是漫长的等待。又有一次遇到她，是在吃饭的时候。后来吃饭时遇到过好几次，我都能一眼找到她，但不一样了：以前我们会有一个互相注视的、类似默契或问号的东西，而那一次，她的头是低着的。</p>
+    <p class="emphasis">那一刻我觉得，所谓的暧昧期大概已经过去了，或者说，她失望了。又或许，这一切都只是我自作多情，那仅仅是别人一个关注的眼神，却让我浮想联翩。但这些，都是我内心的独白和自我的感受。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Eight</div>
+    <h2>自我剖析</h2>
+    <p>我会复盘：我为什么能在人群中一眼看到她？可能是她的所有特征，都在我的审美里。这个复盘其实在中秋节之前就做过。那段时间我几乎天天能遇到她，天天能遇到她，那时我已经满脑子都是她了。我开始深层次地想：我为什么会有这样的感受？</p>
+    <p>她长得像我高中的一个同学。那个同学特别安静，学习特别好，是一个乖乖女的形象，当时给我的印象特别深刻，她也有一双很灵动的眼睛。这可能是我对学习好的女生的一种慕强，或者说一种向往。我这样剖析自己，这份心动或许就来源于此。除此之外，她身上还有我初恋的特征，有我喜欢过的女生的特征——总之，是一个完美的特征集合。就像 neural network 里的 convolution kernel，她就是那个能被立刻锁定的特征，我不知道这算什么。</p>
+    <p>后来我问自己：既然这份心动起源于我喜欢戴眼镜、安安静静、端庄的女孩子，起源于我自己的欲求，那么我到底喜欢的是什么？是她这个人，还是她所携带的那些特征？</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Nine</div>
+    <h2>自卑与克制</h2>
+    <p>那段时间，我开始疯狂地学习，准备考试，还有其他的事情。我本身是双非院校的本科，心里可能有一点自卑，我在想，我们可能没有什么未来。所以那段时间我在提升自己，疯狂地学习，利用 AI 相关的应用辅助学习，解决了很多卡点问题。或许，这就是她给我的一个积极作用吧。</p>
+    <p>我心里更大的隔阂，可能来源于我本身是外包。我知道这段感情的阻力很大，我们之间一定存在身份悬殊的情况。所以我只能庆幸自己看到了花开，看到了那份美好的绽放，却不敢有任何跨越——因为我知道这份跨越有多难，面前摆着什么，里面藏着多么沉痛的代价。</p>
+    <p class="emphasis">所以我想，感情可能就保留那份美好吧。我更觉得自己像一个路人，看到了美好的风景，却不敢有半分奢望，把这份风景留在自己身旁，只能慢慢提升自己、完善自己。</p>
+  </section>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <section class="chapter">
+    <div class="chapter-label">Chapter Ten</div>
+    <h2>决定</h2>
+    <p>但我觉得，我应该表达一下。因为如果这次不表达，可能又会成为一个遗憾。人生有太多的遗憾，都是后知后觉的。这次的冲动，真的令人不舍。至少，要说出来。</p>
+    <p>她的风格是雷厉风行的那种，而我是慢吞吞的那种。迫使我这次一定要说出口的原因是：我现在可能面临一个重大选择——西安那边有一个很好的机会，给华为做一个 UI 项目。这可能是一段很好、又富有挑战的项目经验，对我的诱惑力特别大。如果明天面试 OK，我可能就要离开北京。留在北京，还是去西安，我会用一枚硬币来决定。如果明天面试不太顺利，或者 fail 掉，那我可能会先维持现状，继续努力工作，等待下一个合适的机会再去表达。</p>
+    <p>但那个选择——留在北京还是去西安——只要我离开北京，这句话就一定要说出去。如果留在北京，我也会把这次的内容写下来发给她，毕竟这是一个契机。最终两三天之内就会有重大落盘，所以我得提前把这些内容写好、准备好，至少表达出来，不留遗憾。至少，别再给自己留遗憾了，太多太多的遗憾已经过去。</p>
+  </section>
+
+  <section class="ending">
+    <p class="final-words">
+      总之想说：感谢遇到你。<br>
+      你是一个能让我有冲动去变好的、<br>
+      很有能量的、很美好的存在；<br>
+      是一份不忍打破、不敢冒昧、<br>
+      不敢轻易尝试的存在。
+    </p>
+    <div class="thanks">感 谢 相 遇</div>
+    <div class="thanks-2">感 谢 相 遇</div>
+    <div class="signature">— 写于一个有星星的夜晚 —</div>
+  </section>
+
+</div>
+
+<script>
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+let stars = [];
+let meteors = [];
+let mouseX = 0, mouseY = 0;
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  initStars();
+}
+
+function initStars() {
+  stars = [];
+  const count = Math.floor((canvas.width * canvas.height) / 2500);
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      baseX: Math.random() * canvas.width,
+      baseY: Math.random() * canvas.height,
+      r: Math.random() * 1.4 + 0.3,
+      alpha: Math.random(),
+      speed: Math.random() * 0.015 + 0.005,
+      twinkle: Math.random() * Math.PI * 2,
+      depth: Math.random() * 0.5 + 0.5
+    });
+  }
+}
+
+function spawnMeteor() {
+  meteors.push({
+    x: Math.random() * canvas.width * 0.8,
+    y: Math.random() * canvas.height * 0.4,
+    len: Math.random() * 100 + 50,
+    speed: Math.random() * 6 + 5,
+    angle: Math.PI / 4 + (Math.random() - 0.5) * 0.4,
+    alpha: 1,
+    width: Math.random() * 1.5 + 1
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let s of stars) {
+    s.twinkle += s.speed;
+    s.alpha = 0.25 + Math.sin(s.twinkle) * 0.35 + 0.3;
+    const parallaxX = (mouseX - canvas.width / 2) * 0.01 * s.depth;
+    const parallaxY = (mouseY - canvas.height / 2) * 0.01 * s.depth;
+    const px = s.baseX + parallaxX;
+    const py = s.baseY + parallaxY;
+
+    ctx.beginPath();
+    ctx.arc(px, py, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220, 230, 255, ${s.alpha})`;
+    ctx.fill();
+
+    if (s.r > 1.1) {
+      ctx.beginPath();
+      ctx.arc(px, py, s.r * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180, 200, 255, ${s.alpha * 0.12})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    let m = meteors[i];
+    m.x += Math.cos(m.angle) * m.speed;
+    m.y += Math.sin(m.angle) * m.speed;
+    m.alpha -= 0.012;
+
+    const tailX = m.x - Math.cos(m.angle) * m.len;
+    const tailY = m.y - Math.sin(m.angle) * m.len;
+    const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
+    grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
+    grad.addColorStop(0.3, `rgba(200, 220, 255, ${m.alpha * 0.6})`);
+    grad.addColorStop(1, 'rgba(200, 220, 255, 0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = m.width;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(m.x, m.y);
+    ctx.lineTo(tailX, tailY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, m.width * 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${m.alpha})`;
+    ctx.fill();
+
+    if (m.alpha <= 0 || m.x > canvas.width + 50 || m.y > canvas.height + 50) {
+      meteors.splice(i, 1);
+    }
+  }
+
+  requestAnimationFrame(draw);
+}
+
+resize();
+window.addEventListener('resize', resize);
+draw();
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+setInterval(() => {
+  if (Math.random() > 0.35) spawnMeteor();
+}, 2500);
+
+let lastMeteorTime = 0;
+window.addEventListener('scroll', () => {
+  const now = Date.now();
+  if (now - lastMeteorTime > 800 && Math.random() > 0.4) {
+    spawnMeteor();
+    lastMeteorTime = now;
+  }
+});
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.chapter, .divider, .final-words, .thanks, .thanks-2, .signature')
+  .forEach(el => observer.observe(el));
+
+const endingSection = document.querySelector('.ending');
+const endingObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => spawnMeteor(), i * 400);
+      }
+    }
+  });
+}, { threshold: 0.3 });
+endingObserver.observe(endingSection);
+</script>
+
+</body>
+</html>
